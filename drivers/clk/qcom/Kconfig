@@ -1291,7 +1291,7 @@ config SM_CAMCC_8450
 	select SM_GCC_8450
 	help
 	  Support for the camera clock controller on Qualcomm Technologies, Inc.
-	  SM8450 devices.
+	  SM8450 or SM8475 devices.
 	  Say Y if you want to support camera devices and functionality such as
 	  capturing pictures.
 
