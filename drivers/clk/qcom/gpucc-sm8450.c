@@ -73,6 +73,20 @@ static struct alpha_pll_config gpu_cc_pll0_config_sm8450_v2 = {
 	.user_ctl_hi_val = 0x00000805,
 };
 
+static struct alpha_pll_config sm8475_gpu_cc_pll0_config = {
+	.l = 0x1d,
+	.alpha = 0xb000,
+	.config_ctl_val = 0x20485699,
+	.config_ctl_hi_val = 0x00182261,
+	.config_ctl_hi1_val = 0x82aa299c,
+	.test_ctl_val = 0x00000000,
+	.test_ctl_hi_val = 0x00000003,
+	.test_ctl_hi1_val = 0x00009000,
+	.test_ctl_hi2_val = 0x00000034,
+	.user_ctl_val = 0x00000000,
+	.user_ctl_hi_val = 0x00000005,
+};
+
 static struct clk_alpha_pll gpu_cc_pll0 = {
 	.offset = 0x0,
 	.vco_table = lucid_evo_vco,
@@ -111,6 +125,20 @@ static struct alpha_pll_config gpu_cc_pll1_config = {
 	.config_ctl_hi1_val = 0x32aa299c,
 	.user_ctl_val = 0x00000000,
 	.user_ctl_hi_val = 0x00000805,
+};
+
+static struct alpha_pll_config sm8475_gpu_cc_pll1_config = {
+	.l = 0x34,
+	.alpha = 0x1555,
+	.config_ctl_val = 0x20485699,
+	.config_ctl_hi_val = 0x00182261,
+	.config_ctl_hi1_val = 0x82aa299c,
+	.test_ctl_val = 0x00000000,
+	.test_ctl_hi_val = 0x00000003,
+	.test_ctl_hi1_val = 0x00009000,
+	.test_ctl_hi2_val = 0x00000034,
+	.user_ctl_val = 0x00000000,
+	.user_ctl_hi_val = 0x00000005,
 };
 
 static struct clk_alpha_pll gpu_cc_pll1 = {
@@ -820,6 +848,7 @@ static struct qcom_cc_desc gpu_cc_sm8450_desc = {
 static const struct of_device_id gpu_cc_sm8450_match_table[] = {
 	{ .compatible = "qcom,sm8450-gpucc" },
 	{ .compatible = "qcom,sm8450-gpucc-v2" },
+	{ .compatible = "qcom,sm8475-gpucc" },
 	{ }
 };
 MODULE_DEVICE_TABLE(of, gpu_cc_sm8450_match_table);
@@ -863,8 +892,21 @@ static int gpu_cc_sm8450_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	clk_lucid_evo_pll_configure(&gpu_cc_pll0, regmap, &gpu_cc_pll0_config);
-	clk_lucid_evo_pll_configure(&gpu_cc_pll1, regmap, &gpu_cc_pll1_config);
+	if (of_device_is_compatible(pdev->dev.of_node, "qcom,sm8475-gpucc")) {
+		/* Update GPUCC PLL0 */
+		gpu_cc_pll0.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_LUCID_OLE];
+		gpu_cc_pll0.config = &sm8475_gpu_cc_pll0_config;
+
+		/* Update GPUCC PLL1 */
+		gpu_cc_pll1.regs = clk_alpha_pll_regs[CLK_ALPHA_PLL_TYPE_LUCID_OLE];
+		gpu_cc_pll1.config = &sm8475_gpu_cc_pll1_config;
+
+		clk_lucid_ole_pll_configure(&gpu_cc_pll0, regmap, &sm8475_gpu_cc_pll0_config);
+		clk_lucid_ole_pll_configure(&gpu_cc_pll1, regmap, &sm8475_gpu_cc_pll1_config);
+	} else {
+		clk_lucid_evo_pll_configure(&gpu_cc_pll0, regmap, &gpu_cc_pll0_config);
+		clk_lucid_evo_pll_configure(&gpu_cc_pll1, regmap, &gpu_cc_pll1_config);
+	}
 
 	regmap_write(regmap, 0x9534, 0x0);
 
@@ -895,5 +937,5 @@ static struct platform_driver gpu_cc_sm8450_driver = {
 };
 module_platform_driver(gpu_cc_sm8450_driver);
 
-MODULE_DESCRIPTION("QTI GPU_CC SM8450 Driver");
+MODULE_DESCRIPTION("QTI GPU_CC SM8450 / SM8475 Driver");
 MODULE_LICENSE("GPL");
