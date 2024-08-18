@@ -1300,7 +1300,7 @@ config SM_VIDEOCC_8450
 	select SM_GCC_8450
 	help
 	  Support for the video clock controller on Qualcomm Technologies, Inc.
-	  SM8450 devices.
+	  SM8450 or SM8475 devices.
 	  Say Y if you want to support video devices and functionality such as
 	  video encode/decode.
 
