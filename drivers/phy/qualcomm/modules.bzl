@@ -266,6 +266,22 @@ def register_modules(registry):
     )
 
     registry.register(
+        name = "drivers/phy/qualcomm/phy-qcom-ufs-qmp-v4-cape",
+        out = "phy-qcom-ufs-qmp-v4-cape.ko",
+        config = "CONFIG_PHY_QCOM_UFS_V4_CAPE",
+        srcs = [
+            # do not sort
+            "drivers/phy/qualcomm/phy-qcom-ufs-i.h",
+            "drivers/phy/qualcomm/phy-qcom-ufs-qmp-v4-cape.c",
+            "drivers/phy/qualcomm/phy-qcom-ufs-qmp-v4-cape.h",
+        ],
+        deps = [
+            # do not sort
+            "drivers/phy/qualcomm/phy-qcom-ufs",
+        ],
+    )
+
+    registry.register(
         name = "drivers/phy/qualcomm/phy-qcom-ufs-qmp-v4-crow",
         out = "phy-qcom-ufs-qmp-v4-crow.ko",
         config = "CONFIG_PHY_QCOM_UFS_V4_CROW",

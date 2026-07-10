@@ -101,6 +101,15 @@ config PHY_QCOM_UFS_V4_WAIPIO
 	  This is required to enable UFS on Waipio chipset.
 	  To compile this driver as a module, choose M here.
 
+config PHY_QCOM_UFS_V4_CAPE
+	tristate "Qualcomm Technologies, Inc. UFS Cape Phy Driver"
+	depends on PHY_QCOM_UFS
+	help
+	  This configuration option adds support for the UFS
+	  PHY present on QCOM Cape chipsets.
+	  This is required to enable UFS on Cape chipset.
+	  To compile this driver as a module, choose M here.
+
 config PHY_QCOM_UFS_V4_DIWALI
 	tristate "Qualcomm Technologies, Inc. UFS Diwali Phy Driver"
 	depends on PHY_QCOM_UFS
