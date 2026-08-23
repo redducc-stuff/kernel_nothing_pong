@@ -231,6 +231,7 @@ def define_single_android_build(
             "msm_uapi_headers",
         ],
         outs = ["{}_kernel-uapi-headers.tar.gz".format(stem)],
+        visibility = ["//visibility:public"],
         cmd = """
             mkdir -p intermediate_dir
             for file in $(SRCS)
