@@ -333,6 +333,11 @@ label_flag(
     ],
 )
 
+label_flag(
+    name = "msm_kernel_build_modules",
+    build_setting_default = "//common:kernel_aarch64_modules",
+)
+
 define_canoe()
 
 define_waipio()

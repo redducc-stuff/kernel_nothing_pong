@@ -282,6 +282,7 @@ def define_single_android_build(
         "{}_dtb_build".format(stem),
         ":{}_images".format(stem),
         "{}_images".format(base_kernel),
+        "{}_modules".format(base_kernel),
         "{}_super_image".format(stem),
         "{}_unsparsed_image".format(stem),
         "{}_avb_sign_boot_image".format(stem),
