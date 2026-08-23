@@ -319,6 +319,7 @@ def define_single_android_build(
 
     copy_to_dist_dir(
         name = "{}_dist".format(stem),
+        visibility = ["//visibility:public"],
         data = dist_data,
         dist_dir = "out/msm-kernel-{}-{}/dist".format(name, variant),
         flat = True,
