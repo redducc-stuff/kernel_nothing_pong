@@ -172,6 +172,7 @@ def define_single_android_build(
         build_initramfs = True,
         build_dtbo = True,
         build_vendor_dlkm = True,
+        build_vendor_dlkm_flatten = True,
         dedup_dlkm_modules = True,  # removes system_dlkm modules from vendor_dlkm
         modules_list = "modules-lists/modules.list.msm.{}".format(module_lists_name),
         vendor_dlkm_modules_list = ":{}_vendor_dlkm_modules_list_generated".format(stem),
