@@ -75,6 +75,7 @@ waipio_perf_config = {
     "CONFIG_HVC_GUNYAH_CONSOLE": "n",
     "CONFIG_HWMON": "m",
     "CONFIG_HWSPINLOCK_QCOM": "m",
+    "CONFIG_I2C_EUSB2_REPEATER": "m",
     "CONFIG_I2C_MSM_GENI": "m",
     "CONFIG_I2C_QCOM_GENI": "m",
     "CONFIG_I3C_MASTER_MSM_GENI": "m",
