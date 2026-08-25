@@ -61,6 +61,7 @@ struct spss_data {
 	bool auto_boot;
 	const char *qmp_name;
 	int pil_size_multiplier;
+	bool ac_restricted;
 };
 
 struct qcom_rproc_glink_spss {
@@ -109,6 +110,7 @@ struct qcom_spss {
 	void __iomem *err_status_spare;
 	void __iomem *rmb_gpm;
 	u32 bits_arr[2];
+	bool ac_restricted;
 };
 
 static void read_sp2cl_debug_registers(struct qcom_spss *spss);
@@ -209,6 +211,14 @@ static void qcom_remove_glink_spss_subdev(struct rproc *rproc,
 	of_node_put(glink->node);
 }
 
+static void spss_clear_irq(struct qcom_spss *spss, uint32_t bit)
+{
+	if (spss->ac_restricted)
+		return;
+
+	__raw_writel(bit, spss->irq_clr);
+}
+
 static void clear_pbl_done(struct qcom_spss *spss)
 {
 	uint32_t err_value, rmb_err_spare0, rmb_err_spare1, rmb_err_spare2;
@@ -225,7 +235,7 @@ static void clear_pbl_done(struct qcom_spss *spss)
 		dev_info(spss->dev, "PBL_DONE - 1st phase loading [%s] completed ok\n",
 			 spss->rproc->name);
 
-	__raw_writel(BIT(spss->bits_arr[PBL_DONE]), spss->irq_clr);
+	spss_clear_irq(spss, BIT(spss->bits_arr[PBL_DONE]));
 }
 
 static void clear_err_ready(struct qcom_spss *spss)
@@ -233,7 +243,7 @@ static void clear_err_ready(struct qcom_spss *spss)
 	dev_info(spss->dev, "SW_INIT_DONE - 2nd phase loading [%s] completed ok\n",
 		 spss->rproc->name);
 
-	__raw_writel(BIT(spss->bits_arr[ERR_READY]), spss->irq_clr);
+	spss_clear_irq(spss, BIT(spss->bits_arr[ERR_READY]));
 	complete(&spss->start_done);
 }
 
@@ -253,7 +263,7 @@ static void clear_sw_init_done_error(struct qcom_spss *spss, int err)
 		rmb_err_spare0, rmb_err_spare1, rmb_err_spare2);
 
 	/* Clear the interrupt source */
-	__raw_writel(BIT(spss->bits_arr[ERR_READY]), spss->irq_clr);
+	spss_clear_irq(spss, BIT(spss->bits_arr[ERR_READY]));
 }
 
 
@@ -268,22 +278,23 @@ static void clear_wdog(struct qcom_spss *spss)
 		panic("Panicking, remoterpoc %s crashed\n", spss->rproc->name);
 	}
 
-	__raw_writel(BIT(spss->bits_arr[ERR_READY]), spss->irq_clr);
+	spss_clear_irq(spss, BIT(spss->bits_arr[ERR_READY]));
 	rproc_report_crash(spss->rproc, RPROC_WATCHDOG);
 }
 
-static irqreturn_t spss_generic_handler(int irq, void *dev_id)
+static bool spss_check_irq(struct qcom_spss *spss)
 {
-	struct qcom_spss *spss = dev_id;
 	uint32_t status_val, err_value;
+	bool ret = false;
 
 	err_value =  __raw_readl(spss->err_status_spare);
 	status_val = __raw_readl(spss->irq_status);
 
 	if (status_val & BIT(spss->bits_arr[ERR_READY])) {
-		if (!err_value)
+		if (!err_value) {
 			clear_err_ready(spss);
-		else if (err_value == SPSS_WDOG_ERR)
+			ret = true;
+		} else if (err_value == SPSS_WDOG_ERR)
 			clear_wdog(spss);
 		else
 			clear_sw_init_done_error(spss, err_value);
@@ -292,12 +303,33 @@ static irqreturn_t spss_generic_handler(int irq, void *dev_id)
 	if (status_val & BIT(spss->bits_arr[PBL_DONE]))
 		clear_pbl_done(spss);
 
+	return ret;
+}
+
+static int spss_wait_for_start_done(struct qcom_spss *spss)
+{
+	if (spss->ac_restricted && spss_check_irq(spss))
+		return 1;
+
+	return wait_for_completion_timeout(&spss->start_done,
+					   msecs_to_jiffies(SPSS_TIMEOUT));
+}
+
+static irqreturn_t spss_generic_handler(int irq, void *dev_id)
+{
+	struct qcom_spss *spss = dev_id;
+
+	spss_check_irq(spss);
+
 	return IRQ_HANDLED;
 }
 
 static void mask_scsr_irqs(struct qcom_spss *spss)
 {
 	uint32_t mask_val;
+
+	if (spss->ac_restricted)
+		return;
 
 	/* Masking all interrupts */
 	mask_val = ~0;
@@ -307,6 +339,9 @@ static void mask_scsr_irqs(struct qcom_spss *spss)
 static void unmask_scsr_irqs(struct qcom_spss *spss)
 {
 	uint32_t mask_val;
+
+	if (spss->ac_restricted)
+		return;
 
 	/* unmasking interrupts handled by HLOS */
 	mask_val = ~0;
@@ -332,7 +367,7 @@ static bool check_status(struct qcom_spss *spss, int *ret_error)
 		ret_val = true;
 	} else if ((status_val & BIT(spss->bits_arr[ERR_READY])) && err_value == SPSS_WDOG_ERR) {
 		dev_err(spss->dev, "wdog bite is pending\n");
-		__raw_writel(BIT(spss->bits_arr[ERR_READY]), spss->irq_clr);
+		spss_clear_irq(spss, BIT(spss->bits_arr[ERR_READY]));
 		ret_val = true;
 	}
 
@@ -578,7 +613,7 @@ static int spss_attach(struct rproc *rproc)
 
 	unmask_scsr_irqs(spss);
 
-	ret = wait_for_completion_timeout(&spss->start_done, msecs_to_jiffies(SPSS_TIMEOUT));
+	ret = spss_wait_for_start_done(spss);
 	read_sp2cl_debug_registers(spss);
 
 	/*
@@ -651,7 +686,7 @@ static int spss_start(struct rproc *rproc)
 
 	unmask_scsr_irqs(spss);
 	dev_err(spss->dev, "trying to read spss registers\n");
-	ret = wait_for_completion_timeout(&spss->start_done, msecs_to_jiffies(SPSS_TIMEOUT));
+	ret = spss_wait_for_start_done(spss);
 	read_sp2cl_debug_registers(spss);
 	if (rproc->recovery_disabled && !ret)
 		panic("Panicking, %s start timed out\n", rproc->name);
@@ -877,6 +912,7 @@ static int qcom_spss_probe(struct platform_device *pdev)
 	platform_set_drvdata(pdev, spss);
 	rproc->auto_boot = desc->auto_boot;
 	spss->qmp_name = desc->qmp_name;
+	spss->ac_restricted = desc->ac_restricted;
 	rproc->recovery_disabled = true;
 	rproc_coredump_set_elf_info(rproc, ELFCLASS32, EM_NONE);
 
@@ -973,6 +1009,16 @@ static const struct spss_data spss_resource_init = {
 		.pil_size_multiplier = 4,
 };
 
+static const struct spss_data spss_resource_init_waipio = {
+		.firmware_name = "spss1t.mdt",
+		.pas_id = 14,
+		.ssr_name = "spss",
+		.auto_boot = false,
+		.qmp_name = "spss",
+		.pil_size_multiplier = 4,
+		.ac_restricted = true,
+};
+
 static const struct spss_data spss_resource_init_lahaina = {
 		.firmware_name = "spss1t.mdt",
 		.pas_id = 14,
@@ -983,7 +1029,7 @@ static const struct spss_data spss_resource_init_lahaina = {
 };
 
 static const struct of_device_id spss_of_match[] = {
-	{ .compatible = "qcom,waipio-spss-pas", .data = &spss_resource_init},
+	{ .compatible = "qcom,waipio-spss-pas", .data = &spss_resource_init_waipio},
 	{ .compatible = "qcom,kalama-spss-pas", .data = &spss_resource_init},
 	{ .compatible = "qcom,pineapple-spss-pas", .data = &spss_resource_init},
 	{ .compatible = "qcom,sun-spss-pas", .data = &spss_resource_init},
