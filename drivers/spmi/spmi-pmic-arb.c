@@ -2456,6 +2456,7 @@ static const struct of_device_id spmi_pmic_arb_match_table[] = {
 	{ .compatible = "qcom,spmi-pmic-arb", },
 	{ .compatible = "qcom,x1e80100-spmi-pmic-arb", },
 	{ .compatible = "qcom,canoe-spmi-pmic-arb", },
+	{ .compatible = "qcom,waipio-spmi-pmic-arb", },
 	{},
 };
 MODULE_DEVICE_TABLE(of, spmi_pmic_arb_match_table);
