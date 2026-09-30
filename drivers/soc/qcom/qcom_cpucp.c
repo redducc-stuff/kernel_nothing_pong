@@ -72,7 +72,7 @@ static irqreturn_t qcom_cpucp_rx_interrupt(int irq, void *p)
 			/* Make sure reg write is complete before proceeding */
 			mb();
 			spin_lock_irqsave(&cpucp_ipc->chans_locks[i], flags);
-			if (!IS_ERR(cpucp_ipc->chans[i].con_priv))
+			if (!IS_ERR(cpucp_ipc->chans[i].con_priv) && cpucp_ipc->chans[i].cl)
 				mbox_chan_received_data(&cpucp_ipc->chans[i], NULL);
 			spin_unlock_irqrestore(&cpucp_ipc->chans_locks[i], flags);
 		}
@@ -103,7 +103,7 @@ static irqreturn_t qcom_cpucp_v2_mbox_rx_interrupt(int irq, void *p)
 			/* Make sure reg write is complete before proceeding */
 			mb();
 			spin_lock_irqsave(&cpucp_ipc->chans_locks[i], flags);
-			if (!IS_ERR(cpucp_ipc->chans[i].con_priv))
+			if (!IS_ERR(cpucp_ipc->chans[i].con_priv) && cpucp_ipc->chans[i].cl)
 				mbox_chan_received_data(&cpucp_ipc->chans[i], (void *)&data);
 			spin_unlock_irqrestore(&cpucp_ipc->chans_locks[i], flags);
 			ret = IRQ_HANDLED;
@@ -280,6 +280,10 @@ static int qcom_cpucp_probe(struct platform_device *pdev)
 		return -ENOMEM;
 	for (i = 0; i < cpucp_ipc->num_chans; i++)
 		spin_lock_init(&cpucp_ipc->chans_locks[i]);
+
+	/* CPUCP may already have an IRQ pending; keep channels unbound until mbox setup */
+	for (i = 0; i < cpucp_ipc->num_chans; i++)
+		cpucp_ipc->chans[i].con_priv = ERR_PTR(-EINVAL);
 
 	cpucp_ipc->irq = platform_get_irq(pdev, 0);
 	if (cpucp_ipc->irq < 0) {
