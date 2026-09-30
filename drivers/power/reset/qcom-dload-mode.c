@@ -451,6 +451,11 @@ static int qcom_dload_probe(struct platform_device *pdev)
 	if (ret)
 		pr_err("poweroff_init_regulator failed.\n");
 
+	// Let emmc_dload default to QCOM_DOWNLOAD_DEST_EMMC for user.
+	if (poweroff->dload_dest_addr) {
+		set_download_dest(poweroff, QCOM_DOWNLOAD_DEST_EMMC);
+	}
+
 	return 0;
 }
 
