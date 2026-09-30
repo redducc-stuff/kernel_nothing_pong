@@ -58,6 +58,8 @@ source "$(KCONFIG_EXT_PREFIX)drivers/nothing_stability/Kconfig"
 
 source "$(KCONFIG_EXT_PREFIX)drivers/nothing_thermal/Kconfig"
 
+source "$(KCONFIG_EXT_PREFIX)drivers/nfc/qti/Kconfig"
+
 source "$(KCONFIG_EXT_PREFIX)drivers/interconnect/Kconfig"
 
 source "$(KCONFIG_EXT_PREFIX)drivers/iommu/Kconfig"

@@ -71,3 +71,4 @@ obj-y += virtio/
 obj-y += input/fingerprint/
 obj-y += nothing_stability/
 obj-y += nothing_thermal/
+obj-y += nfc/qti/
