@@ -12,4 +12,7 @@ def register_modules(registry):
             "drivers/nfc/qti/nfc_i2c_drv.c",
             "drivers/nfc/qti/nfc_i2c_drv.h",
         ],
+        deps = [
+            "kernel/trace/qcom_ipc_logging",
+        ],
     )

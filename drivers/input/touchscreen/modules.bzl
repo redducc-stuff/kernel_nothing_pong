@@ -19,6 +19,8 @@ def register_modules(registry):
             "drivers/input/touchscreen/focaltech_touch/focaltech_common.h",
             "drivers/input/touchscreen/focaltech_touch/focaltech_config.h",
             "drivers/input/touchscreen/focaltech_touch/focaltech_core.c",
+            "drivers/input/touchscreen/focaltech_touch/include/firmware/FT3680_WXN_M146_V27_D01_20220706_app.h",
+            "drivers/input/touchscreen/focaltech_touch/include/firmware/fw_sample.h",
             "drivers/input/touchscreen/focaltech_touch/focaltech_core.h",
             "drivers/input/touchscreen/focaltech_touch/focaltech_esdcheck.c",
             "drivers/input/touchscreen/focaltech_touch/focaltech_ex_fun.c",
