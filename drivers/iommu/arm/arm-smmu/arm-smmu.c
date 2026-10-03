@@ -2947,9 +2947,9 @@ static void arm_smmu_get_resv_regions(struct device *dev,
 		if (!np)
 			np = dev->of_node;
 
+		/* Still used by waipio DTs; a backtrace per device stalls boot */
 		if (of_property_present(np, "qcom,iommu-dma-addr-pool"))
-			WARN(1, "%s: qcom,iommu-dma-addr-pool is deprecated. Switch to using iommu-addresses.",
-				dev_name(dev));
+			dev_warn_once(dev, "qcom,iommu-dma-addr-pool is deprecated. Switch to using iommu-addresses.\n");
 	}
 
 	region = iommu_alloc_resv_region(MSI_IOVA_BASE, MSI_IOVA_LENGTH,
