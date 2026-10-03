@@ -2865,7 +2865,7 @@ static void goodix_charger_proc_exit(struct goodix_ts_core *core_data)
 	remove_proc_entry("TP_charger_flags", NULL);
 }
 
-static int goodix_ts_remove(struct platform_device *pdev)
+static void goodix_ts_remove(struct platform_device *pdev)
 {
 	struct goodix_ts_core *core_data = platform_get_drvdata(pdev);
 	struct goodix_ts_hw_ops *hw_ops = core_data->hw_ops;
@@ -2903,7 +2903,6 @@ static int goodix_ts_remove(struct platform_device *pdev)
 
 	goodix_charger_proc_exit(core_data);
 
-	return 0;
 }
 
 #if 0

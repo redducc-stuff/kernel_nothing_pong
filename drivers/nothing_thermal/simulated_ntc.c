@@ -207,7 +207,7 @@ err_free_mem:
 	return ret;
 }
 
-static int slntc_shell_remove(struct platform_device *pdev)
+static void slntc_shell_remove(struct platform_device *pdev)
 {
 	struct slntc_shell_temp *hst = platform_get_drvdata(pdev);
 
@@ -219,7 +219,6 @@ static int slntc_shell_remove(struct platform_device *pdev)
 		kfree(hst);
 	}
 
-	return 0;
 }
 
 static struct platform_driver slntc_shell_platdrv = {

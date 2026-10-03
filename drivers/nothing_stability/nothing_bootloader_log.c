@@ -97,11 +97,10 @@ err:
 	return -ENOMEM;
 }
 
-static int bootloader_logger_remove(struct platform_device *pdev)
+static void bootloader_logger_remove(struct platform_device *pdev)
 {
 	remove_proc_entry(PROC_NAME, NULL);
 	kfree(bootloader_log_buf);
-	return 0;
 }
 
 static const struct of_device_id bootloader_logger_id[] = {

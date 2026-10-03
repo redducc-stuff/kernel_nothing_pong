@@ -107,7 +107,7 @@ static int nothing_restart_info_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int nothing_restart_info_remove(struct platform_device *pdev)
+static void nothing_restart_info_remove(struct platform_device *pdev)
 {
 	struct nothing_restart_notify *restart_notify = platform_get_drvdata(pdev);
 
@@ -118,7 +118,6 @@ static int nothing_restart_info_remove(struct platform_device *pdev)
 	if (restart_info)
 		iounmap(restart_info);
 
-	return 0;
 }
 
 static const struct of_device_id of_nothing_restart_info_match[] = {

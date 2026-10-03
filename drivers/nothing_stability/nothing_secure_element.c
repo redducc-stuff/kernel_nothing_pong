@@ -155,7 +155,7 @@ exit:
 	return 0;
 }
 
-static int nothing_secure_element_remove(struct platform_device *secure_dev)
+static void nothing_secure_element_remove(struct platform_device *secure_dev)
 {
 	if (nothing_secure_dir) {
 			remove_proc_entry(nothing_secure_dir_name, NULL);
@@ -165,7 +165,6 @@ static int nothing_secure_element_remove(struct platform_device *secure_dev)
 			devm_kfree(&secure_dev->dev, secure_data_ptr);
 	}
 
-	return 0;
 }
 
 static struct of_device_id nothing_secure_element_match_table[] = {
