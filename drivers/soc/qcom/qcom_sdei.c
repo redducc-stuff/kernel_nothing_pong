@@ -62,8 +62,14 @@ static int sdei_event_signal(u64 target_pe)
 	return res.a0;
 }
 
+/* Firmware without SDEI (e.g. phone2) faults on the SDEI hypercall */
+static bool sdei_ready;
+
 int qcom_sdei_shared_reset(void)
 {
+	if (!sdei_ready)
+		return -ENODEV;
+
 	sdei_shared_reset();
 
 	return 0;
@@ -131,11 +137,13 @@ static int qcom_sdei_driver_probe(struct platform_device *pdev)
 		return ret;
 	}
 
+	sdei_ready = true;
 	return 0;
 }
 
 static void qcom_sdei_driver_remove(struct platform_device *pdev)
 {
+	sdei_ready = false;
 	sdei_event_disable(SDEI_EVENT_STANDARD);
 	sdei_event_unregister(SDEI_EVENT_STANDARD);
 
