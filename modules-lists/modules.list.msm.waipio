@@ -82,6 +82,7 @@ qseecom_proxy.ko
 si_core_module.ko
 mem_object.ko
 ufshcd-crypto-qti.ko
+tmecom-intf.ko
 qcom_ice.ko
 ufs-qcom.ko
 phy-qcom-ufs.ko
