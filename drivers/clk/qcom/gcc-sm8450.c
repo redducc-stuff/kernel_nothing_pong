@@ -129,6 +129,9 @@ static struct clk_alpha_pll sm8475_gcc_gpll2 = {
 			.parent_data = &(const struct clk_parent_data){
 				.fw_name = "bi_tcxo",
 			},
+			.num_parents = 1,
+			.ops = &clk_alpha_pll_fixed_lucid_ole_ops,
+		},
 		.vdd_data = {
 			.vdd_class = &vdd_cx,
 			.num_rate_max = VDD_NUM,
@@ -139,9 +142,6 @@ static struct clk_alpha_pll sm8475_gcc_gpll2 = {
 				[VDD_LOW_L1] = 1500000000,
 				[VDD_NOMINAL] = 1750000000,
 				[VDD_HIGH] = 2000000000},
-		},
-			.num_parents = 1,
-			.ops = &clk_alpha_pll_fixed_lucid_ole_ops,
 		},
 	},
 };
@@ -157,6 +157,9 @@ static struct clk_alpha_pll sm8475_gcc_gpll3 = {
 			.parent_data = &(const struct clk_parent_data){
 				.fw_name = "bi_tcxo",
 			},
+			.num_parents = 1,
+			.ops = &clk_alpha_pll_fixed_lucid_ole_ops,
+		},
 		.vdd_data = {
 			.vdd_class = &vdd_cx,
 			.num_rate_max = VDD_NUM,
@@ -167,9 +170,6 @@ static struct clk_alpha_pll sm8475_gcc_gpll3 = {
 				[VDD_LOW_L1] = 1500000000,
 				[VDD_NOMINAL] = 1750000000,
 				[VDD_HIGH] = 2000000000},
-		},
-			.num_parents = 1,
-			.ops = &clk_alpha_pll_fixed_lucid_ole_ops,
 		},
 	},
 };

@@ -91,7 +91,8 @@ static const struct alpha_pll_config sm8475_disp_cc_pll0_config = {
 static struct clk_init_data sm8475_disp_cc_pll0_init = {
 	.name = "disp_cc_pll0",
 	.parent_data = &(const struct clk_parent_data) {
-		.index = DT_BI_TCXO,
+		.fw_name = "bi_tcxo",
+		.name = "bi_tcxo",
 	},
 	.num_parents = 1,
 	.ops = &clk_alpha_pll_reset_lucid_ole_ops,
@@ -155,7 +156,8 @@ static const struct alpha_pll_config sm8475_disp_cc_pll1_config = {
 static struct clk_init_data sm8475_disp_cc_pll1_init = {
 	.name = "disp_cc_pll1",
 	.parent_data = &(const struct clk_parent_data) {
-		.index = DT_BI_TCXO,
+		.fw_name = "bi_tcxo",
+		.name = "bi_tcxo",
 	},
 	.num_parents = 1,
 	.ops = &clk_alpha_pll_reset_lucid_ole_ops,
