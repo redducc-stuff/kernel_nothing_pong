@@ -68,51 +68,13 @@ static int slntc_get_shell_temp(struct thermal_zone_device *tz,
 	if (!temp || !tz)
 		return -EINVAL;
 
-	hst = tz->devdata;
+	hst = thermal_zone_device_priv(tz);
 	*temp = shell_temp[hst->shell_id];
-	return 0;
-}
-
-static int slntc_set_trip_temp(struct thermal_zone_device *tz, int trip,
-				    int temp)
-{
-	struct slntc_shell_temp *hst = tz->devdata;
-	unsigned long flags;
-
-	if (trip >= hst->ntrips || trip < 0)
-		return -EDOM;
-
-	spin_lock_irqsave(&hst->trips_lock, flags);
-	hst->trips[trip].temperature = temp;
-	spin_unlock_irqrestore(&hst->trips_lock, flags);
-
-	pr_info("trips[%d].temperature = %d", trip, temp);
-
-	return 0;
-}
-
-static int slntc_set_trip_hyst(struct thermal_zone_device *tz, int trip,
-				    int hyst)
-{
-	struct slntc_shell_temp *hst = tz->devdata;
-	unsigned long flags;
-
-	if (trip >= hst->ntrips || trip < 0)
-		return -EDOM;
-
-	spin_lock_irqsave(&hst->trips_lock, flags);
-	hst->trips[trip].hysteresis = hyst;
-	spin_unlock_irqrestore(&hst->trips_lock, flags);
-
-	pr_info("trips[%d].hysteresis = %d", trip, hyst);
-
 	return 0;
 }
 
 struct thermal_zone_device_ops shell_thermal_zone_ops = {
 	.get_temp = slntc_get_shell_temp,
-	.set_trip_temp = slntc_set_trip_temp,
-	.set_trip_hyst = slntc_set_trip_hyst,
 };
 
 static int build_trips(struct slntc_shell_temp *hst)
@@ -133,6 +95,8 @@ static int build_trips(struct slntc_shell_temp *hst)
 		hst->trips[i].hysteresis = TRIPS_HYST;
 		hst->trips[i].temperature = TRIPS_TEMP;
 		hst->trips[i].type = THERMAL_TRIP_PASSIVE;
+		/* The thermal core now owns writable trip temperature and hysteresis */
+		hst->trips[i].flags = THERMAL_TRIP_FLAG_RW;
 	}
 
 	return ret;
@@ -145,8 +109,7 @@ static int slntc_shell_probe(struct platform_device *pdev)
 	struct thermal_zone_device *tz_dev;
 	struct slntc_shell_temp *hst;
 	int ret = 0;
-	int mask = 0;
-	int result, i;
+	int result;
 
 	if (!of_device_is_available(dev_node)) {
 		pr_err("shell-temp dev not found\n");
@@ -175,11 +138,8 @@ static int slntc_shell_probe(struct platform_device *pdev)
 		goto err_remove_id;
 	}
 
-	for (i = 0; i < hst->ntrips; i++)
-		mask |= 1 << i;
-
 	tz_dev = thermal_zone_device_register_with_trips(dev_node->name,
-			hst->trips, hst->ntrips, mask, hst,
+			hst->trips, hst->ntrips, hst,
 			&shell_thermal_zone_ops, NULL, 0, 0);
 	if (IS_ERR_OR_NULL(tz_dev)) {
 		pr_err("register thermal zone for shell failed\n");

@@ -134,59 +134,7 @@ static int get_dma_info(const void *data, struct file *file, unsigned int n)
 	return 0;
 }
 
-static int dma_buf_show(const struct dma_buf *buf_obj, void *private)
-{
-	int ret;
-	struct dma_buf_attachment *attach_obj;
-	struct dma_resv_iter cursor;
-	struct dma_fence *fence;
-	int attach_count;
-	struct dma_buf_priv *buf = (struct dma_buf_priv *)private;
-	struct seq_file *s = buf->s;
-
-	ret = dma_resv_lock_interruptible(buf_obj->resv, NULL);
-
-	if (ret)
-		goto err;
-
-	spin_lock((spinlock_t *)&buf_obj->name_lock);
-	seq_printf(s, "%08zu\t%08x\t%08x\t%08ld\t%s\t%08lu\t%s\n",
-		   buf_obj->size,
-		   buf_obj->file->f_flags, buf_obj->file->f_mode,
-		   file_count(buf_obj->file),
-		   buf_obj->exp_name,
-		   file_inode(buf_obj->file)->i_ino,
-		   buf_obj->name ?: "");
-	spin_unlock((spinlock_t *)&buf_obj->name_lock);
-
-	dma_resv_for_each_fence(&cursor, buf_obj->resv, DMA_RESV_USAGE_BOOKKEEP, fence)
-		seq_printf(s, "\t%s fence: %s %s %ssignalled\n",
-			   dma_resv_iter_usage(&cursor) == DMA_RESV_USAGE_WRITE ?
-			   "Exclusive" : "Shared",
-			   fence->ops->get_driver_name(fence),
-			   fence->ops->get_timeline_name(fence),
-			   dma_fence_is_signaled(fence) ? "" : "un");
-
-	seq_puts(s, "\tAttached Devices:\n");
-	attach_count = 0;
-
-	list_for_each_entry(attach_obj, &buf_obj->attachments, node) {
-		seq_printf(s, "\t%s\n", dev_name(attach_obj->dev));
-		attach_count++;
-	}
-	dma_resv_unlock(buf_obj->resv);
-
-	seq_printf(s, "Total %d devices attached\n\n", attach_count);
-
-	buf->count++;
-	buf->size += buf_obj->size;
-
-	return 0;
-err:
-	return ret;
-}
-
-
+/* GKI 6.12 does not export a dma-buf iterator */
 static int show_all_dma_thread(struct seq_file *m, void *p)
 {
 	struct dma_buf_priv dma_buf_priv;
@@ -199,7 +147,6 @@ static int show_all_dma_thread(struct seq_file *m, void *p)
 	seq_printf(m, "%-8s\t%-8s\t%-8s\t%-8s\texp_name\t%-8s\n",
 		   "size", "flags", "mode", "count", "ino");
 
-	dma_buf_get_each(dma_buf_show, &dma_buf_priv);
 
 	seq_printf(m, "\nTotal %d objects, %zu bytes\n",
 		   dma_buf_priv.count, dma_buf_priv.size);

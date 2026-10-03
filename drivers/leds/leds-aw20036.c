@@ -2117,7 +2117,7 @@ static int aw20036_i2c_probe(struct i2c_client *i2c)
 
 	if (gpio_is_valid(aw20036->irq_gpio)) {
 		ret = devm_gpio_request_one(&i2c->dev, aw20036->irq_gpio,
-					    GPIOF_DIR_IN, "aw20036_int");
+					    GPIOF_IN, "aw20036_int");
 		if (ret) {
 			dev_err(&i2c->dev, "%s: int request failed\n",
 				__func__);
