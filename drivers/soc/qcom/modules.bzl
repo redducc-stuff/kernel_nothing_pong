@@ -990,6 +990,7 @@ def register_modules(registry):
             "drivers/virt/gunyah/gh_dbl",
             "arch/arm64/gunyah/gh_arm_drv",
             "drivers/soc/qcom/hwkm",
+            "drivers/soc/qcom/tmecom/tmecom-intf",
         ],
     )
 
@@ -2057,5 +2058,23 @@ def register_modules(registry):
             # do not sort
             "drivers/soc/qcom/pdr_interface",
             "drivers/soc/qcom/smem",
+        ],
+    )
+
+    # Phone2's TZ still needs HLOS to have TME broadcast the HWKM transport key
+    registry.register(
+        name = "drivers/soc/qcom/tmecom/tmecom-intf",
+        out = "tmecom-intf.ko",
+        config = "CONFIG_MSM_TMECOM_QMP",
+        srcs = [
+            # do not sort
+            "drivers/soc/qcom/tmecom/tmecom.c",
+            "drivers/soc/qcom/tmecom/tmecom.h",
+            "drivers/soc/qcom/tmecom/tme_hwkm_master.c",
+            "drivers/soc/qcom/tmecom/tme_hwkm_master_intf.h",
+            "drivers/soc/qcom/tmecom/tmelog.c",
+        ],
+        deps = [
+            "drivers/mailbox/msm_qmp",
         ],
     )

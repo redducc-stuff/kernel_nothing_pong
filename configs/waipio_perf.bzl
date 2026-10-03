@@ -132,6 +132,7 @@ waipio_perf_config = {
     "CONFIG_MSM_RDBG": "m",
     "CONFIG_MSM_SYSSTATS": "m",
     "CONFIG_MSM_SYSSTATS_STUB_NONEXPORTED_SYMBOLS": "y",
+    "CONFIG_MSM_TMECOM_QMP": "m",
     "CONFIG_NITRO_ENCLAVES": "n",
     "CONFIG_NL80211_TESTMODE": "y",
     "CONFIG_NOP_USB_XCEIV": "m",
