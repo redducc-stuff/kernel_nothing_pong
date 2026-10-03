@@ -68,4 +68,6 @@ obj-y += usb/
 obj-y += video/
 obj-y += virt/
 obj-y += virtio/
-
+obj-y += input/fingerprint/
+obj-y += nothing_stability/
+obj-y += nothing_thermal/

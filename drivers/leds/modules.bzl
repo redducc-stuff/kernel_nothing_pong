@@ -152,3 +152,15 @@ def register_modules(registry):
             # do not sort
         ],
     )
+
+    registry.register(
+        name = "drivers/leds/leds-aw20036",
+        out = "leds-aw20036.ko",
+        config = "CONFIG_LEDS_AW20036",
+        srcs = [
+            # do not sort
+            "drivers/leds/leds-aw20036.c",
+            "drivers/leds/leds-aw20036.h",
+            "drivers/leds/leds-aw20036-reg.h",
+        ],
+    )

@@ -28,6 +28,11 @@
 #include <linux/mutex.h>
 #include <linux/platform_device.h>
 #include <linux/input.h>
+
+/* GKI uapi lacks the 5.10 fingerprint key code */
+#ifndef KEY_FINGER
+#define KEY_FINGER		249
+#endif
 #include <linux/interrupt.h>
 #include <linux/completion.h>
 #include <linux/of_irq.h>

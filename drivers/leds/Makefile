@@ -24,4 +24,4 @@ obj-$(CONFIG_LEDS_BYS_AW21104) += leds-bys-aw21104.o
 obj-$(CONFIG_LEDS_USER_LP5814) += leds-user-lp5814.o
 
 obj-$(CONFIG_LEDS_ETIRLED_LM3645) += leds-etirled-lm3645.o
-
+obj-$(CONFIG_LEDS_AW20036)		+= leds-aw20036.o

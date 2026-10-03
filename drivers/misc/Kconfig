@@ -103,3 +103,14 @@ config SLG4DC_SIGNAL_IC
 
 	  Say Y if you want to enable SLG4DC driver.
 endmenu
+
+config NT2_HWID
+	tristate "NT2 Hardware ID Driver"
+
+config NT_SECURE_STATE
+	tristate "NT Secure State Driver"
+
+config NT_SLOT_STATE
+	tristate "NT SLOT State Driver"
+
+source "$(KCONFIG_EXT_PREFIX)drivers/misc/haptic_hv/Kconfig"

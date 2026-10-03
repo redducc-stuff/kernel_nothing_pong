@@ -82,3 +82,9 @@ config LEDS_ETIRLED_LM3645
 	  will be called leds-etirled-lm3645.
 
 endif # NEW_LEDS
+
+config LEDS_AW20036
+	tristate "LED Support for AW20036"
+	depends on LEDS_CLASS && I2C
+	help
+	  Awinic AW20036 LED driver used for the Nothing Phone (2) glyph interface.

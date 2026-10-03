@@ -11,3 +11,6 @@ config TOUCHSCREEN_CAP1296
           tive touch sensor inputs with programmable sensitivity
           for use in touch sensor applications.
 
+source "$(KCONFIG_EXT_PREFIX)drivers/input/touchscreen/focaltech_touch/Kconfig"
+
+source "$(KCONFIG_EXT_PREFIX)drivers/input/touchscreen/goodix_berlin_driver/Kconfig"

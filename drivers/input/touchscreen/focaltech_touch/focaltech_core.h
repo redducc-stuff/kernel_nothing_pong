@@ -38,6 +38,11 @@
 #include <linux/i2c.h>
 #include <linux/spi/spi.h>
 #include <linux/input.h>
+
+/* GKI uapi lacks the 5.10 fingerprint key code */
+#ifndef KEY_FINGER
+#define KEY_FINGER		249
+#endif
 #include <linux/input/mt.h>
 #include <linux/interrupt.h>
 #include <linux/irq.h>

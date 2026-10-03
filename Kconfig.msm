@@ -52,6 +52,12 @@ source "$(KCONFIG_EXT_PREFIX)drivers/input/misc/Kconfig"
 
 source "$(KCONFIG_EXT_PREFIX)drivers/input/touchscreen/Kconfig"
 
+source "$(KCONFIG_EXT_PREFIX)drivers/input/fingerprint/Kconfig"
+
+source "$(KCONFIG_EXT_PREFIX)drivers/nothing_stability/Kconfig"
+
+source "$(KCONFIG_EXT_PREFIX)drivers/nothing_thermal/Kconfig"
+
 source "$(KCONFIG_EXT_PREFIX)drivers/interconnect/Kconfig"
 
 source "$(KCONFIG_EXT_PREFIX)drivers/iommu/Kconfig"

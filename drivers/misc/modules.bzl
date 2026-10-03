@@ -68,3 +68,43 @@ def register_modules(registry):
             "drivers/misc/slg4dc.c",
         ],
     )
+
+    registry.register(
+        name = "drivers/misc/haptic_hv/haptic",
+        out = "haptic.ko",
+        config = "CONFIG_AWINIC_HAPTIC_HV",
+        srcs = [
+            # do not sort
+            "drivers/misc/haptic_hv/aw8692x.c",
+            "drivers/misc/haptic_hv/haptic_hv.c",
+            "drivers/misc/haptic_hv/haptic_hv.h",
+            "drivers/misc/haptic_hv/haptic_hv_reg.h",
+        ],
+    )
+    registry.register(
+        name = "drivers/misc/hardware_id",
+        out = "hardware_id.ko",
+        config = "CONFIG_NT2_HWID",
+        srcs = [
+            # do not sort
+            "drivers/misc/hardware_id.c",
+        ],
+    )
+    registry.register(
+        name = "drivers/misc/secure_state",
+        out = "secure_state.ko",
+        config = "CONFIG_NT_SECURE_STATE",
+        srcs = [
+            # do not sort
+            "drivers/misc/secure_state.c",
+        ],
+    )
+    registry.register(
+        name = "drivers/misc/slot_status",
+        out = "slot_status.ko",
+        config = "CONFIG_NT_SLOT_STATE",
+        srcs = [
+            # do not sort
+            "drivers/misc/slot_status.c",
+        ],
+    )
