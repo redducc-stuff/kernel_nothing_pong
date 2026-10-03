@@ -406,8 +406,12 @@ static int qcom_dload_probe(struct platform_device *pdev)
 	struct qcom_dload *poweroff;
 	int ret, temp;
 
+	/*
+	 * Don't wait for minidump: until this probes SDI stays armed and an
+	 * early panic resets into crash dump mode, losing pstore.
+	 */
 	if (IS_ENABLED(CONFIG_QCOM_MINIDUMP) && !msm_minidump_enabled())
-		return -EPROBE_DEFER;
+		dev_warn(&pdev->dev, "minidump not ready, probing anyway\n");
 
 	poweroff = devm_kzalloc(&pdev->dev, sizeof(*poweroff), GFP_KERNEL);
 	if (!poweroff)
