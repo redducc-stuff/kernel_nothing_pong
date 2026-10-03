@@ -3888,6 +3888,17 @@ static int gcc_sm8450_probe(struct platform_device *pdev)
 		gcc_ufs_phy_unipro_core_clk_src.freq_tbl = sm8475_ftbl_gcc_ufs_phy_ice_core_clk_src;
 		gcc_ufs_phy_unipro_core_clk_src.clkr.hw.init = &sm8475_gcc_ufs_phy_unipro_core_clk_src_init;
 
+		/* The 806.4 and 850 MHz UFS rates need TURBO and TURBO_L1 */
+		gcc_ufs_phy_axi_clk_src.clkr.vdd_data.rate_max[VDD_NOMINAL] = 600000000;
+		gcc_ufs_phy_axi_clk_src.clkr.vdd_data.rate_max[VDD_HIGH] = 806400000;
+		gcc_ufs_phy_axi_clk_src.clkr.vdd_data.rate_max[VDD_HIGH_L1] = 850000000;
+		gcc_ufs_phy_ice_core_clk_src.clkr.vdd_data.rate_max[VDD_NOMINAL] = 600000000;
+		gcc_ufs_phy_ice_core_clk_src.clkr.vdd_data.rate_max[VDD_HIGH] = 806400000;
+		gcc_ufs_phy_ice_core_clk_src.clkr.vdd_data.rate_max[VDD_HIGH_L1] = 850000000;
+		gcc_ufs_phy_unipro_core_clk_src.clkr.vdd_data.rate_max[VDD_NOMINAL] = 600000000;
+		gcc_ufs_phy_unipro_core_clk_src.clkr.vdd_data.rate_max[VDD_HIGH] = 806400000;
+		gcc_ufs_phy_unipro_core_clk_src.clkr.vdd_data.rate_max[VDD_HIGH_L1] = 850000000;
+
 		gcc_sm8450_desc.clks[SM8475_GCC_GPLL2] = &sm8475_gcc_gpll2.clkr;
 		gcc_sm8450_desc.clks[SM8475_GCC_GPLL3] = &sm8475_gcc_gpll3.clkr;
 	}
