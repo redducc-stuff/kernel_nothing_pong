@@ -17,9 +17,9 @@
 #include <linux/platform_device.h>
 #if IS_ENABLED(CONFIG_QTI_HW_KEY_MANAGER_V1)
 #include "hwkm_v1.h"
+#endif
 #if IS_ENABLED(CONFIG_MSM_TMECOM_QMP)
 #include <linux/tme_hwkm_master.h>
-#endif
 #endif
 
 #include <linux/firmware/qcom/qcom_scm.h>
