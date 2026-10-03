@@ -1311,6 +1311,10 @@ static int ufs_qcom_cfg_timers(struct ufs_hba *hba, bool is_pre_scale_up)
 		core_clk_rate = DEFAULT_CLK_RATE_HZ;
 
 	core_clk_cycles_per_us = core_clk_rate / USEC_PER_SEC;
+	/* HPG: SYS1CLK_1US is Fs/2 (rounded up) when running beyond 300MHz on turbo targets */
+	if (core_clk_rate > 300000000 && host->turbo_additional_conf_req)
+		core_clk_cycles_per_us = core_clk_cycles_per_us / 2 +
+					 (core_clk_cycles_per_us % 2);
 	if (ufshcd_readl(hba, REG_UFS_SYS1CLK_1US) != core_clk_cycles_per_us) {
 		ufshcd_writel(hba, core_clk_cycles_per_us, REG_UFS_SYS1CLK_1US);
 		/*
@@ -1467,6 +1471,17 @@ static int ufs_qcom_link_startup_notify(struct ufs_hba *hba,
 				strlen(android_boot_dev) &&
 				strcmp(android_boot_dev, dev_name(dev)))
 			return -ENODEV;
+
+		if (host->turbo) {
+			if (host->turbo_additional_conf_req)
+				ufshcd_rmwl(hba, TEST_BUS_CTRL_2_HCI_SEL_TURBO_MASK,
+					    TEST_BUS_CTRL_2_HCI_SEL_TURBO,
+					    UFS_TEST_BUS_CTRL_2);
+			err = ufshcd_dme_rmw(hba, PA_VS_CLK_CFG_REG_MASK_TURBO,
+					     ATTR_HW_CGC_EN_TURBO, PA_VS_CLK_CFG_REG);
+			if (err)
+				dev_err(dev, "%s: turbo setting failed %d\n", __func__, err);
+		}
 
 		if (ufs_qcom_cfg_timers(hba, false)) {
 			dev_err(hba->dev, "%s: ufs_qcom_cfg_timers() failed\n",
@@ -2624,14 +2639,22 @@ static void ufs_qcom_advertise_quirks(struct ufs_hba *hba)
 static void ufs_qcom_set_caps(struct ufs_hba *hba)
 {
 	struct ufs_qcom_host *host = ufshcd_get_variant(hba);
+	struct device_node *np = hba->dev->of_node;
+	u32 turbo_l1_freq = 0;
+
+	host->turbo = of_property_read_bool(np, "multi-level-clk-scaling-support");
+	of_property_read_u32(np, "axi-turbo-l1-clk-freq", &turbo_l1_freq);
+	host->turbo_additional_conf_req = host->turbo && turbo_l1_freq > 403000000;
 
 	if (!host->disable_lpm) {
 		hba->caps |= UFSHCD_CAP_CLK_GATING |
 			UFSHCD_CAP_HIBERN8_WITH_CLK_GATING |
-			UFSHCD_CAP_CLK_SCALING |
 			UFSHCD_CAP_AUTO_BKOPS_SUSPEND |
-			UFSHCD_CAP_AGGR_POWER_COLLAPSE |
-			UFSHCD_CAP_WB_WITH_CLK_SCALING;
+			UFSHCD_CAP_AGGR_POWER_COLLAPSE;
+		/* Turbo hosts stay at the turbo rate; scaling to NOM without the 5.10 multi-level logic breaks HS-G4 */
+		if (!host->turbo)
+			hba->caps |= UFSHCD_CAP_CLK_SCALING |
+				UFSHCD_CAP_WB_WITH_CLK_SCALING;
 		if (!host->disable_wb_support)
 			hba->caps |= UFSHCD_CAP_WB_EN;
 
@@ -4287,6 +4310,9 @@ static int ufs_qcom_core_clk_ctrl(struct ufs_hba *hba, bool is_scale_up, unsigne
 
 set_core_clk_ctrl:
 	switch (clk_freq) {
+	case 850000000:
+		clk_40ns_cycles = 9;
+		break;
 	case 403000000:
 		clk_40ns_cycles = 16;
 		break;
@@ -4320,6 +4346,8 @@ set_core_clk_ctrl:
 	}
 
 	clk_1us_cycles = freq_ceil(clk_freq, (1000 * 1000));
+	if (clk_freq == 850000000)
+		clk_1us_cycles = 213;
 	ret = __ufs_qcom_core_clk_ctrl(hba, clk_1us_cycles, clk_40ns_cycles);
 	if (ret)
 		dev_err(hba->dev, "failed to set core clk ctrl for clk freq %lu, err %d\n",
