@@ -196,6 +196,7 @@ struct qcom_slim_ngd_ctrl {
 	struct completion ctrl_up;
 	struct work_struct m_work;
 	struct work_struct ngd_up_work;
+	bool qmi_up_pending;
 	struct workqueue_struct *mwq;
 	struct completion qmi_up;
 	struct completion xfer_done;
@@ -1726,6 +1727,11 @@ static int qcom_slim_ngd_qmi_new_server(struct qmi_handle *hdl,
 	qmi->svc_info.sq_port = service->port;
 
 	complete(&ctrl->qmi_up);
+	/* The DSP service can come up after the up worker stopped waiting */
+	if (ctrl->qmi_up_pending) {
+		ctrl->qmi_up_pending = false;
+		schedule_work(&ctrl->ngd_up_work);
+	}
 
 	return 0;
 }
@@ -1807,7 +1813,8 @@ static void qcom_slim_ngd_up_worker(struct work_struct *work)
 	/* Make sure qmi service is up before continuing */
 	if (!wait_for_completion_interruptible_timeout(&ctrl->qmi_up,
 						       msecs_to_jiffies(MSEC_PER_SEC))) {
-		dev_err(ctrl->dev, "QMI wait timeout\n");
+		dev_err(ctrl->dev, "QMI wait timeout, retrying when the service appears\n");
+		ctrl->qmi_up_pending = true;
 		return;
 	}
 
