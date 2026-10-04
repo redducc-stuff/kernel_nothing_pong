@@ -1716,6 +1716,20 @@ memlat_unlock:
 #endif
 #define INST_EV		0x08
 #define CYC_EV		0x11
+static bool memlat_wants_cpucp(struct device_node *np)
+{
+	struct device_node *child;
+
+	for_each_available_child_of_node(np, child) {
+		if (of_property_read_bool(child, "qcom,cpucp-enabled")) {
+			of_node_put(child);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 static int memlat_dev_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
@@ -1730,9 +1744,11 @@ static int memlat_dev_probe(struct platform_device *pdev)
 	scmi_dev = get_qcom_scmi_device();
 	if (IS_ERR(scmi_dev)) {
 		ret = PTR_ERR(scmi_dev);
-		if (ret == -EPROBE_DEFER)
+		/* Only wait for CPUCP if a group offloads memlat to it */
+		if (ret == -EPROBE_DEFER && memlat_wants_cpucp(dev->of_node))
 			return ret;
-		dev_err(dev, "Error getting scmi_dev ret = %d\n", ret);
+		if (ret != -EPROBE_DEFER)
+			dev_err(dev, "Error getting scmi_dev ret = %d\n", ret);
 	}
 #endif
 
