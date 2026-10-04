@@ -1164,9 +1164,12 @@ static int qcom_pmu_driver_probe(struct platform_device *pdev)
 	scmi_dev = get_qcom_scmi_device();
 	if (IS_ERR(scmi_dev)) {
 		ret = PTR_ERR(scmi_dev);
-		if (ret == -EPROBE_DEFER)
+		/* Counters are only shared with CPUCP through pmu-base */
+		if (ret == -EPROBE_DEFER &&
+		    of_property_match_string(dev->of_node, "reg-names", "pmu-base") >= 0)
 			return ret;
-		dev_err(dev, "Error getting scmi_dev ret = %d\n", ret);
+		if (ret != -EPROBE_DEFER)
+			dev_err(dev, "Error getting scmi_dev ret = %d\n", ret);
 	}
 #endif
 	ret = cpu_logical_to_phys(0);
